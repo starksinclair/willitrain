@@ -31,7 +31,7 @@ This is an [Expo](https://expo.dev) app. Follow the steps below to get running o
 2. Start the Expo dev server
 
    ```bash
-   npx expo start
+   npx expo run:ios
    ```
 
 3. Run on iOS Simulator
@@ -41,34 +41,7 @@ This is an [Expo](https://expo.dev) app. Follow the steps below to get running o
 Notes:
 
 - This project runs great in the iOS Simulator with Expo Go. Xcode must be installed for Simulator integration to work.
-- For a custom native module or faster refresh, consider a [development build](https://docs.expo.dev/develop/development-builds/introduction/).
 
-## Android (optional)
-
-If you also want Android:
-
-- Install Android Studio + SDKs, create a virtual device, then press `a` in the Expo terminal.
-- See Expo’s emulator guide: https://docs.expo.dev/workflow/android-studio-emulator/
-
-## Troubleshooting
-
-- Clear Metro cache
-
-  ```bash
-  npx expo start -c
-  ```
-
-- Permissions issues with Xcode/Simulator
-  - Ensure Xcode Command Line Tools is selected (Xcode → Settings → Locations).
-  - Open Simulator once manually via Xcode.
-
-- CocoaPods (only needed if you later prebuild/eject or use dev builds)
-
-  ```bash
-  sudo gem install cocoapods
-  npx expo prebuild --platform ios
-  cd ios && pod install && cd ..
-  ```
 
 ## Project structure
 
