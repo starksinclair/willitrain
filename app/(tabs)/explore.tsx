@@ -1,112 +1,285 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import * as Location from "expo-location";
+import { router } from "expo-router";
+import { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import MapPicker from "../../components/map-modal";
+import { ThemedText } from "../../components/themed-text";
+import { ThemedView } from "../../components/themed-view";
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+export default function QueryScreen() {
+  const [locationName, setLocationName] = useState("");
+  const [coords, setCoords] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [mapOpen, setMapOpen] = useState(false);
+  const [show, setShow] = useState(false);
 
-export default function TabTwoScreen() {
+  const onChange = (event: any, selectedDate: any) => {
+    setShow(false);
+    if (selectedDate) {
+      setSelectedDate(selectedDate);
+    }
+  };
+
+  const showDatepicker = () => {
+    setShow(true);
+  };
+
+  const handleGeocode = async () => {
+    const q = locationName.trim();
+    if (!q) return;
+    try {
+      const res = await Location.geocodeAsync(q);
+      if (res?.[0]) {
+        const { latitude, longitude } = res[0];
+        setCoords({ latitude, longitude });
+        // Optional: replace text with a nicer label via reverse geocode
+        try {
+          const rev = await Location.reverseGeocodeAsync({
+            latitude,
+            longitude,
+          });
+          if (rev?.[0]) {
+            const p = rev[0];
+            const label = [p.name, p.city, p.region, p.country]
+              .filter(Boolean)
+              .join(", ");
+            if (label) setLocationName(label);
+          }
+        } catch {}
+        // Alert.alert(
+        //   "Location Found",
+        //   `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
+        // );
+      } else {
+        Alert.alert(
+          "Not Found",
+          "Could not locate that place. Try a more specific name."
+        );
+      }
+    } catch (e: any) {
+      Alert.alert("Error", e?.message || "Failed to look up that place.");
+    }
+  };
+
+  const handleNext = () => {
+    if (!locationName.trim() && !coords && !selectedDate) {
+      Alert.alert("Location Required", "Please enter a location and date.");
+      return;
+    }
+    router.push({
+      pathname: "/forecast",
+      params: {
+        location: locationName || "",
+        date: selectedDate ? selectedDate.toISOString().split("T")[0] : "",
+        lat: coords?.latitude?.toString() || "",
+        lon: coords?.longitude?.toString() || "",
+      },
+    });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
+    <ThemedView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <ThemedText type="title" style={styles.headerTitle}>
+          Weather Probability
         </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
+        <View style={styles.placeholder} />
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Location Section */}
+        <View style={styles.section}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Location
+          </ThemedText>
+
+          <View style={{ position: "relative" }}>
+            <TextInput
+              style={styles.input}
+              placeholder="Search for a location"
+              placeholderTextColor="#666"
+              value={locationName}
+              onChangeText={setLocationName}
+              returnKeyType="search"
+              onSubmitEditing={handleGeocode}
+            />
+            <TouchableOpacity
+              style={{ position: "absolute", right: 14, top: 14 }}
+              onPress={handleGeocode}
+            >
+              <Ionicons name="search" size={22} color="#007AFF" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.locationOptions}>
+            <TouchableOpacity
+              style={styles.locationOption}
+              onPress={() =>
+                Alert.alert("Coming soon", "Pin on map is under construction.")
+              }
+            >
+              <Ionicons name="location" size={20} color="#007AFF" />
+              <ThemedText style={styles.locationOptionText}>
+                Pin on map
+              </ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.locationOption}
+              onPress={() =>
+                Alert.alert(
+                  "Coming soon",
+                  "Draw a boundary is under construction."
+                )
+              }
+            >
+              <Ionicons name="create" size={20} color="#007AFF" />
+              <ThemedText style={styles.locationOptionText}>
+                Draw a boundary
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          {coords && (
+            <ThemedText style={{ color: "#ccc", marginTop: 8 }}>
+              Selected: {coords.latitude.toFixed(4)},{" "}
+              {coords.longitude.toFixed(4)}
             </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+          )}
+        </View>
+
+        {/* Date Section */}
+        <View style={styles.section}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Date
+          </ThemedText>
+
+          <TouchableOpacity style={styles.dateButton} onPress={showDatepicker}>
+            <Ionicons name="calendar" size={20} color="#007AFF" />
+            <ThemedText style={styles.dateButtonText}>
+              {selectedDate
+                ? selectedDate.toLocaleDateString()
+                : "Select a date or range"}
+            </ThemedText>
+            <DateTimePicker
+              mode="date"
+              is24Hour={true}
+              testID="dateTimePicker"
+              value={selectedDate || new Date()}
+              onChange={onChange}
+              display="default"
+              textColor="#fff"
+              themeVariant="dark"
+              style={{ color: "#fff" }}
+            />
+            <Ionicons
+              style={{ marginLeft: 12 }}
+              name="chevron-down"
+              size={20}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
+        {/* {show && (
+
+        )} */}
+      </ScrollView>
+
+      {/* Bottom Button */}
+      <View style={styles.bottomContainer}>
+        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <ThemedText style={styles.nextButtonText}>Next</ThemedText>
+          <Ionicons name="arrow-forward" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Map Picker Modal */}
+      <MapPicker
+        visible={mapOpen}
+        onClose={() => setMapOpen(false)}
+        onConfirm={(p) => {
+          setMapOpen(false);
+          setCoords({ latitude: p.latitude, longitude: p.longitude });
+          if (p.label) setLocationName(p.label);
+        }}
+        initialCoords={coords ?? undefined}
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: { flex: 1, backgroundColor: "#000" },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
   },
-  titleContainer: {
-    flexDirection: 'row',
+  headerTitle: { fontSize: 24, fontWeight: "bold", color: "#fff" },
+  placeholder: { width: 40 },
+  content: { flex: 1, paddingHorizontal: 20 },
+  section: { marginBottom: 32 },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 12,
+  },
+  input: {
+    backgroundColor: "#1a1a1a",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    fontSize: 16,
+    color: "#fff",
+    borderWidth: 1,
+    borderColor: "#333",
+  },
+  locationOptions: { flexDirection: "row", gap: 16, marginTop: 12 },
+  locationOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 8,
+  },
+  locationOptionText: { color: "#007AFF", fontSize: 16 },
+  dateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#1a1a1a",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderWidth: 1,
+    borderColor: "#333",
+  },
+  dateButtonText: { flex: 1, fontSize: 16, color: "#fff", marginLeft: 12 },
+  bottomContainer: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20 },
+  nextButton: {
+    backgroundColor: "#007AFF",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 12,
     gap: 8,
   },
+  nextButtonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
 });
