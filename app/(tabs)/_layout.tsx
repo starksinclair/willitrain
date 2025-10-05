@@ -57,6 +57,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="trip"
+        options={{
+          title: "Trip",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="navigate" size={24} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

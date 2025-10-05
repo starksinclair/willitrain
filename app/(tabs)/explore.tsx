@@ -44,7 +44,6 @@ export default function QueryScreen() {
       if (res?.[0]) {
         const { latitude, longitude } = res[0];
         setCoords({ latitude, longitude });
-        // Optional: replace text with a nicer label via reverse geocode
         try {
           const rev = await Location.reverseGeocodeAsync({
             latitude,
@@ -58,10 +57,6 @@ export default function QueryScreen() {
             if (label) setLocationName(label);
           }
         } catch {}
-        // Alert.alert(
-        //   "Location Found",
-        //   `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
-        // );
       } else {
         Alert.alert(
           "Not Found",
@@ -127,9 +122,7 @@ export default function QueryScreen() {
           <View style={styles.locationOptions}>
             <TouchableOpacity
               style={styles.locationOption}
-              onPress={() =>
-                Alert.alert("Coming soon", "Pin on map is under construction.")
-              }
+              onPress={() => setMapOpen(true)}
             >
               <Ionicons name="location" size={20} color="#007AFF" />
               <ThemedText style={styles.locationOptionText}>
@@ -193,9 +186,6 @@ export default function QueryScreen() {
             />
           </TouchableOpacity>
         </View>
-        {/* {show && (
-
-        )} */}
       </ScrollView>
 
       {/* Bottom Button */}
@@ -211,7 +201,6 @@ export default function QueryScreen() {
         visible={mapOpen}
         onClose={() => setMapOpen(false)}
         onConfirm={(p) => {
-          setMapOpen(false);
           setCoords({ latitude: p.latitude, longitude: p.longitude });
           if (p.label) setLocationName(p.label);
         }}

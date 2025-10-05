@@ -1,8 +1,26 @@
-# Welcome to your Expo app 👋
+# WillItRain (Expo) – Clean Setup & Run Guide
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is an [Expo](https://expo.dev) app. Follow the steps below to get running on a clean macOS environment (including Xcode and the iOS Simulator).
 
-## Get started
+## Prerequisites (macOS)
+
+- Node.js 18+ and npm
+  - Recommended: install via Homebrew: `brew install node`
+- Git (usually preinstalled on macOS)
+- Optional: [Watchman](https://facebook.github.io/watchman/): `brew install watchman`
+
+## Install Xcode and iOS Simulator
+
+1. Install Xcode from the App Store
+   - Open the App Store, search for “Xcode”, click Install.
+2. Open Xcode once to finish setup
+   - Launch Xcode → Accept license → Xcode → Settings → Locations → ensure Command Line Tools is set.
+3. Install iOS Simulator runtime
+   - Xcode → Settings → Platforms → Install at least one iOS version.
+4. Start the Simulator (optional manual start)
+   - Xcode → Open Developer Tool → Simulator.
+
+## Project setup
 
 1. Install dependencies
 
@@ -10,41 +28,64 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Start the Expo dev server
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Run on iOS Simulator
+   - With the dev server running, press `i` in the Expo terminal, or
+   - Click “Run on iOS simulator” in the web UI.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Notes:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- This project runs great in the iOS Simulator with Expo Go. Xcode must be installed for Simulator integration to work.
+- For a custom native module or faster refresh, consider a [development build](https://docs.expo.dev/develop/development-builds/introduction/).
 
-## Get a fresh project
+## Android (optional)
 
-When you're ready, run:
+If you also want Android:
 
-```bash
-npm run reset-project
-```
+- Install Android Studio + SDKs, create a virtual device, then press `a` in the Expo terminal.
+- See Expo’s emulator guide: https://docs.expo.dev/workflow/android-studio-emulator/
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Troubleshooting
+
+- Clear Metro cache
+
+  ```bash
+  npx expo start -c
+  ```
+
+- Permissions issues with Xcode/Simulator
+  - Ensure Xcode Command Line Tools is selected (Xcode → Settings → Locations).
+  - Open Simulator once manually via Xcode.
+
+- CocoaPods (only needed if you later prebuild/eject or use dev builds)
+
+  ```bash
+  sudo gem install cocoapods
+  npx expo prebuild --platform ios
+  cd ios && pod install && cd ..
+  ```
+
+## Project structure
+
+- `app/`: screens and routes (Expo Router)
+- `components/`: shared UI
+- `constants/`: helpers and utilities
+- `services/` and `api/`: data fetching
+
+You can start developing by editing files inside the **app** directory (file‑based routing).
 
 ## Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
+- Expo docs: https://docs.expo.dev/
+- iOS Simulator: https://docs.expo.dev/workflow/ios-simulator/
+- Development builds: https://docs.expo.dev/develop/development-builds/introduction/
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Community
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- GitHub: https://github.com/expo/expo
+- Discord: https://chat.expo.dev

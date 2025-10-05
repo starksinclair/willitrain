@@ -1,7 +1,15 @@
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons
 import * as Location from "expo-location";
-import { AppleMaps } from "expo-maps";
+import { AppleMaps, GoogleMaps } from "expo-maps";
 import { useEffect, useRef, useState } from "react";
-import { Modal, Platform, Text, View } from "react-native";
+import {
+  Alert,
+  Modal,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Props = {
   visible: boolean;
@@ -14,46 +22,54 @@ type Props = {
   initialCoords?: { latitude: number; longitude: number };
 };
 
+type Coordinate = {
+  latitude: number;
+  longitude: number;
+};
+
 export default function MapPicker({
   visible,
   onClose,
   onConfirm,
   initialCoords,
 }: Props) {
-  const mapRef = useRef<AppleMaps.View>(null);
-  const [pin, setPin] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(initialCoords ?? null);
-
+  const mapRef = useRef<any>(null);
+  console.log("initialCoords", initialCoords);
+  const [pin, setPin] = useState<Coordinate | null>(initialCoords ?? null);
+  const [camera, setCamera] = useState<any>(null);
   // Ask permission + center on user (first open only)
   useEffect(() => {
     (async () => {
-      if (!visible) return;
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") return;
-      if (!initialCoords) {
-        const here = await Location.getCurrentPositionAsync({});
-        const camera: Partial<AppleMaps.Camera> = {
-          center: {
-            latitude: here.coords.latitude,
-            longitude: here.coords.longitude,
-          },
-          zoom: 11,
-        };
-        mapRef.current?.animateCamera(camera as AppleMaps.Camera, {
-          duration: 500,
-        });
-      }
+      //   if (!initialCoords) {
+      const here = await Location.getCurrentPositionAsync({});
+      console.log("here", here);
+      const camera = {
+        coordinates: {
+          latitude: here.coords.latitude,
+          longitude: here.coords.longitude,
+        },
+        zoom: 12,
+      };
+      setCamera(camera);
+      // mapRef.current?.animateCamera(camera, {
+      //   duration: 500,
+      // });
+      //   }
     })();
-  }, [visible]);
+  }, []);
 
-  const handleLongPress = (e: MapPressEvent) => {
-    setPin(e.nativeEvent.coordinate);
+  const handleMapPress = (e: any) => {
+    console.log("handleMapPress", e);
+    setPin(e.coordinates);
   };
 
   const handleConfirm = async () => {
-    if (!pin) return;
+    if (!pin) {
+      Alert.alert("Error", "Please select a location");
+      return;
+    }
     // Try reverse geocoding for a friendly label
     let label: string | undefined;
     try {
@@ -66,25 +82,95 @@ export default function MapPicker({
       }
     } catch {}
     onConfirm({ ...pin, label });
+    onClose();
+  };
+
+  const initialCenter = initialCoords ?? {
+    latitude: 40.194146630461205,
+    longitude: -85.40122409047746,
+  };
+
+  const getInstructionText = () => {
+    if (Platform.OS === "ios") {
+      return "Tap to drop pin and click on the close button to save";
+    } else if (Platform.OS === "android") {
+      return "Long press to drop pin and click on the close button to save";
+    }
+    return "Map not supported";
+  };
+
+  const renderMap = () => {
+    console.log("camera jdjdjd", camera);
+    const commonProps = {
+      style: { flex: 1 },
+      initialCamera: camera ?? {
+        coordinates: initialCenter,
+        zoom: 8,
+      },
+      markers: pin ? [{ coordinates: pin, title: "Selected Location" }] : [],
+    };
+
+    if (Platform.OS === "ios") {
+      return (
+        <AppleMaps.View
+          ref={mapRef}
+          {...commonProps}
+          cameraPosition={camera}
+          onMapClick={handleMapPress}
+        />
+      );
+    } else if (Platform.OS === "android") {
+      return (
+        <GoogleMaps.View
+          ref={mapRef}
+          {...commonProps}
+          onMapLongClick={handleMapPress}
+        />
+      );
+    } else {
+      return (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Maps are only available on iOS and Android</Text>
+        </View>
+      );
+    }
   };
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      {Platform.OS === "ios" ? (
-        <AppleMaps.View
-          ref={mapRef}
-          style={{ flex: 1 }}
-          onLongPress={handleLongPress}
-          initialCamera={{
-            center: initialCoords ?? { latitude: 39.7684, longitude: -86.1581 }, // Indy fallback
-            zoom: 8,
-          }}
-        />
-      ) : (
-        <View>
-          <Text>Map</Text>
+      <View style={{ flex: 1 }}>
+        {renderMap()}
+        <View style={{ position: "absolute", bottom: 50, alignSelf: "center" }}>
+          <Text
+            style={{
+              color: "white",
+              fontSize: 16,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              padding: 10,
+              borderRadius: 5,
+            }}
+          >
+            {getInstructionText()}
+          </Text>
         </View>
-      )}
+        {/* Close button */}
+        <TouchableOpacity
+          style={{
+            position: "absolute",
+            top: 60,
+            left: 20,
+            zIndex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            borderRadius: 20,
+            padding: 5,
+          }}
+          onPress={handleConfirm}
+        >
+          <Ionicons name="close-circle" size={30} color="white" />
+        </TouchableOpacity>
+      </View>
     </Modal>
   );
 }
