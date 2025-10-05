@@ -77,7 +77,8 @@ export const getTemperatureColor = (temp: number) => {
   if (temp >= 75) return { color: "#FF6B35", label: "Sunny", icon: "sunny" }; // Hot - Orange
   if (temp >= 60)
     return { color: "#FFD23F", label: "Warm", icon: "partly-sunny" }; // Warm - Yellow
-  if (temp >= 40) return { color: "#4ECDC4", label: "Cool", icon: "cool" }; // Cool - Teal
+  if (temp >= 40)
+    return { color: "#4ECDC4", label: "Cool", icon: "thermometer" }; // Cool - Teal
   return { color: "#4A90E2", label: "Cold", icon: "snow" }; // Cold - Blue
 };
 
