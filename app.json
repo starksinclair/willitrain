@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.nzenwata.willitrain",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Willitrain uses your location to show weather forecasts for your current area, for example to tell you if it will rain soon where you are."
       }
     },
     "splash": {
@@ -55,7 +56,7 @@
         "expo-maps",
         {
           "requestLocationPermission": true,
-          "locationPermission": "Allow $(PRODUCT_NAME) to use your location"
+          "locationPermission": "Allow Willitrain to use your location to show your local weather while you use the app."
         }
       ]
     ],

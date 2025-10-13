@@ -417,7 +417,7 @@ export default function ActivityPlannerScreen() {
 
         <View style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            What's your plan?
+            What&apos;s your plan?
           </ThemedText>
 
           <TouchableOpacity
